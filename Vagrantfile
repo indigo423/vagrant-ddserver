@@ -129,9 +129,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # vb.gui = true
   end
 
-#    chef.cookbooks_path = "cookbooks"
-#    chef.add_recipe "postgresql::server"
+  config.vm.provision :chef_solo do |chef|
+    chef.cookbooks_path = "cookbooks"
+    chef.add_recipe "python"
 #    chef.add_recipe "yumrepo::opennms-common"
 #    chef.add_recipe "yumrepo::opennms-rhel6"
 #    chef.add_recipe "opennms"
   end
+end

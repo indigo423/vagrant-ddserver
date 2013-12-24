@@ -34,26 +34,12 @@ if platform?("redhat", "centos")
     cwd "/usr/local/src"
     user "root"
     code <<-EOH
-      wget --no-check-certificate #{node['setuptool']['url']}/setuptools/setuptools-#{node['setuptool']['version']}.tar.gz && \
+      wget --no-check-certificate #{node['setuptool']['url']}/setuptools-#{node['setuptool']['version']}.tar.gz && \
       tar -xvf setuptools-#{node['setuptool']['version']}.tar.gz && \
       cd setuptools-#{node['setuptool']['version']} && \
       python2.7 setup.py install && \
       curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python2.7 - && \
       easy_install-2.7 -U distribute
     EOH
-  end
-
-  # Install firewall policy to allow access to TCP 8980
-  cookbook_file "/etc/sysconfig/iptables" do
-    source "iptables"
-    owner "root"
-    group "root"
-    mode "0644"
-    action :create
-  end
-
-  service "iptables" do
-    supports :status => true, :restart => true, :reload => true
-    action [ :restart ]
   end
 end
