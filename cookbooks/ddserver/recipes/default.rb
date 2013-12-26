@@ -77,6 +77,12 @@ if platform?("redhat", "centos")
         mode "0750"
     end
 
+    # Enable ddserver on system boot and start
+    service "ddserver" do
+        supports :status => true, :restart => true
+        action [ :enable, :start]
+    end
+
     # Initialize MySQL database with database, schema user and authentication
 	bash "set mysql root password" do
 	  not_if("/usr/bin/mysql -u root --password=secret -e 'show databases' | grep ddserver")
