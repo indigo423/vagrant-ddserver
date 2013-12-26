@@ -38,6 +38,11 @@ if platform?("redhat", "centos")
 		action [ :enable, :start]
 	end
 
+	service "iptables" do
+		supports :status => true, :restart => true, :reload => true
+		action [ :disable, :stop]
+	end
+
     bash "clone git repository" do
     	not_if { ::File.exists?("/usr/local/src/ddserver") }
     	cwd "/usr/local/src"
@@ -69,4 +74,6 @@ if platform?("redhat", "centos")
         /usr/bin/mysql -u root --password=secret -e "FLUSH PRIVILEGES;"
       EOH
     end
+
+
  end
