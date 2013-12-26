@@ -16,6 +16,7 @@ if platform?("redhat", "centos")
   bash "Download and compile Python" do
     cwd "/usr/local/src"
     user "root"
+    not_if {::File.exists?("Python-#{node['python']['version']}.tar.xz")}
     code <<-EOH
       wget #{node['python']['url']}/#{node['python']['version']}/Python-#{node['python']['version']}.tar.xz && \
       xz -d Python-#{node['python']['version']}.tar.xz && \
@@ -33,6 +34,7 @@ if platform?("redhat", "centos")
   bash "Install Python setuptools and pip" do
     cwd "/usr/local/src"
     user "root"
+    not_if {::File.exists?("setuptools-#{node['setuptool']['version']}.tar.gz")}
     code <<-EOH
       wget --no-check-certificate #{node['setuptool']['url']}/setuptools-#{node['setuptool']['version']}.tar.gz && \
       tar -xvf setuptools-#{node['setuptool']['version']}.tar.gz && \

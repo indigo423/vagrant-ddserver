@@ -18,15 +18,6 @@
 # limitations under the License.
 #
 
-#yum install mysql-server
-#/etc/init.d/mysqld start
-#/usr/bin/mysqladmin -u root password 'secret'
-
-#yum install -y mysql-devel python-devel
-#git clone https://github.com/reissmann/ddserver.git
-#cd ddserver/
-#python2.7 setup.py install
-
 #cd /etc/ddserver/
 #cp ddserver.conf.example ddserver.conf
 #cd /usr/share/doc/ddserver/
@@ -34,3 +25,42 @@
 #mysql -u root -p ddserver < schema.sql
 #mysql -u root -p ddserver
 #cd /etc/ddserver/
+
+# Platform dependend install from OpenNMS repository
+if platform?("redhat", "centos")
+	execute "install mysql database server and libraries" do
+		command "yum install -y mysql-server mysql-devel python-devel"
+		action :run
+	end
+
+	service "mysqld" do
+		supports :status => true, :restart => true, :reload => true
+		action [ :enable, :start]
+	end
+
+    bash "clone git repository" do
+    	cwd "/usr/local/src"
+    	user "root"
+    	code <<-EOH
+    		git clone https://github.com/reissmann/ddserver.git
+    	EOH
+    end
+
+    bash "compile and install ddserver" do
+    	cwd "/usr/local/src/ddserver"
+    	user "root"
+    	code <<-EOH
+    		python2.7 setup.py install
+    	EOH
+    end
+
+	bash "set mysql root password" do
+	  cwd "/root"
+      user "root"
+      code <<-EOH
+        /usr/bin/mysqladmin -u root password 'secret' && \
+        /usr/bin/mmysql -u root --password=secret -e "create database ddserver;" && \
+        /usr/bin/mysql -u root --password=secret < /usr/share/doc/ddserver/schema.sql
+      EOH
+    end
+ end
