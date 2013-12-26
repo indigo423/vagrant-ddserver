@@ -39,6 +39,7 @@ if platform?("redhat", "centos")
 	end
 
     bash "clone git repository" do
+    	not_if { ::File.exists?("/usr/local/src/ddserver") }
     	cwd "/usr/local/src"
     	user "root"
     	code <<-EOH
@@ -47,6 +48,7 @@ if platform?("redhat", "centos")
     end
 
     bash "compile and install ddserver" do
+    	not_if { ::File.exists?("/etc/ddserver") }
     	cwd "/usr/local/src/ddserver"
     	user "root"
     	code <<-EOH
@@ -55,6 +57,7 @@ if platform?("redhat", "centos")
     end
 
 	bash "set mysql root password" do
+	  not_if("/usr/bin/mysql -u root --password=secret -e 'show databases' | grep ddserver")
 	  cwd "/root"
       user "root"
       code <<-EOH
