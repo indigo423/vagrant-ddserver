@@ -74,7 +74,7 @@ if platform?("redhat", "centos")
         source "ddserver.init.erb"
         owner "root"
         group "root"
-        mode "0750"
+        mode "0755"
     end
 
     # Enable ddserver on system boot and start
