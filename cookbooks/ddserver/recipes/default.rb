@@ -17,32 +17,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-#cd /etc/ddserver/
-#cp ddserver.conf.example ddserver.conf
-#cd /usr/share/doc/ddserver/
-#mysql -u root -p
-#mysql -u root -p ddserver < schema.sql
-#mysql -u root -p ddserver
-#cd /etc/ddserver/
-
 # Platform dependend install from OpenNMS repository
 if platform?("redhat", "centos")
+
+    # Install MySQL server and development environment required for 
+    # compiling from source
 	execute "install mysql database server and libraries" do
 		command "yum install -y mysql-server mysql-devel python-devel"
 		action :run
 	end
 
+    # Enable MySQL for systemboot and start
 	service "mysqld" do
 		supports :status => true, :restart => true, :reload => true
 		action [ :enable, :start]
 	end
 
+    # Stop firewall, not sure right now which TCP/UDP ports have to be activated
 	service "iptables" do
 		supports :status => true, :restart => true, :reload => true
 		action [ :disable, :stop]
 	end
 
+    # Checkout latest code from github
     bash "clone git repository" do
     	not_if { ::File.exists?("/usr/local/src/ddserver") }
     	cwd "/usr/local/src"
@@ -52,6 +49,7 @@ if platform?("redhat", "centos")
     	EOH
     end
 
+    # Compile and install from source with python 
     bash "compile and install ddserver" do
     	not_if { ::File.exists?("/etc/ddserver") }
     	cwd "/usr/local/src/ddserver"
@@ -61,6 +59,25 @@ if platform?("redhat", "centos")
     	EOH
     end
 
+    # Create configuration for ddserver and database connection
+    template "/etc/ddserver/ddserver.conf" do
+        not_if { ::File.exists?("/etc/ddserver/ddserver.conf") }
+        source "ddserver.conf.erb"
+        owner "root"
+        group "root"
+        mode "0640"
+    end
+
+    # This should be done by the ddserver installer
+    template "/etc/init.d/ddserver" do
+        not_if { ::File.exists?("/etc/init.d/ddserver") }
+        source "ddserver.init.erb"
+        owner "root"
+        group "root"
+        mode "0750"
+    end
+
+    # Initialize MySQL database with database, schema user and authentication
 	bash "set mysql root password" do
 	  not_if("/usr/bin/mysql -u root --password=secret -e 'show databases' | grep ddserver")
 	  cwd "/root"
@@ -74,6 +91,4 @@ if platform?("redhat", "centos")
         /usr/bin/mysql -u root --password=secret -e "FLUSH PRIVILEGES;"
       EOH
     end
-
-
  end
