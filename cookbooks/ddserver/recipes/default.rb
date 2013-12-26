@@ -20,43 +20,43 @@
 # Platform dependend install from OpenNMS repository
 if platform?("redhat", "centos")
 
-    # Install MySQL server and development environment required for 
+    # Install MySQL server and development environment required for
     # compiling from source
-	execute "install mysql database server and libraries" do
-		command "yum install -y mysql-server mysql-devel python-devel"
-		action :run
-	end
+    execute "install mysql database server and libraries" do
+      command "yum install -y mysql-server mysql-devel python-devel"
+      action :run
+    end
 
     # Enable MySQL for systemboot and start
-	service "mysqld" do
-		supports :status => true, :restart => true, :reload => true
-		action [ :enable, :start]
-	end
+    service "mysqld" do
+      supports :status => true, :restart => true, :reload => true
+      action [ :enable, :start]
+    end
 
     # Stop firewall, not sure right now which TCP/UDP ports have to be activated
-	service "iptables" do
-		supports :status => true, :restart => true, :reload => true
-		action [ :disable, :stop]
-	end
+    service "iptables" do
+      supports :status => true, :restart => true, :reload => true
+      action [ :disable, :stop]
+    end
 
     # Checkout latest code from github
     bash "clone git repository" do
-    	not_if { ::File.exists?("/usr/local/src/ddserver") }
-    	cwd "/usr/local/src"
-    	user "root"
-    	code <<-EOH
-    		git clone https://github.com/reissmann/ddserver.git
-    	EOH
+      not_if { ::File.exists?("/usr/local/src/ddserver") }
+      cwd "/usr/local/src"
+      user "root"
+      code <<-EOH
+        git clone https://github.com/reissmann/ddserver.git
+      EOH
     end
 
-    # Compile and install from source with python 
+    # Compile and install from source with python
     bash "compile and install ddserver" do
-    	not_if { ::File.exists?("/etc/ddserver") }
-    	cwd "/usr/local/src/ddserver"
-    	user "root"
-    	code <<-EOH
-    		python2.7 setup.py install
-    	EOH
+      not_if { ::File.exists?("/etc/ddserver") }
+      cwd "/usr/local/src/ddserver"
+      user "root"
+      code <<-EOH
+        python2.7 setup.py install
+      EOH
     end
 
     # Create configuration for ddserver and database connection
@@ -84,9 +84,9 @@ if platform?("redhat", "centos")
     end
 
     # Initialize MySQL database with database, schema user and authentication
-	bash "set mysql root password" do
-	  not_if("/usr/bin/mysql -u root --password=secret -e 'show databases' | grep ddserver")
-	  cwd "/root"
+    bash "set mysql root password" do
+      not_if("/usr/bin/mysql -u root --password=secret -e 'show databases' | grep ddserver")
+      cwd "/root"
       user "root"
       code <<-EOH
         /usr/bin/mysqladmin -u root password 'secret' && \
