@@ -59,8 +59,11 @@ if platform?("redhat", "centos")
       user "root"
       code <<-EOH
         /usr/bin/mysqladmin -u root password 'secret' && \
-        /usr/bin/mmysql -u root --password=secret -e "create database ddserver;" && \
-        /usr/bin/mysql -u root --password=secret < /usr/share/doc/ddserver/schema.sql
+        /usr/bin/mysql -u root --password=secret -e "create database ddserver;" && \
+        /usr/bin/mysql -u root --password=secret ddserver < /usr/share/doc/ddserver/schema.sql && \
+        /usr/bin/mysql -u root --password=secret -e "create user 'ddserver'@'localhost' identified by 'secret';" && \
+        /usr/bin/mysql -u root --password=secret -e "grant all privileges on ddserver.* TO 'ddserver'@'localhost';" && \
+        /usr/bin/mysql -u root --password=secret -e "FLUSH PRIVILEGES;"
       EOH
     end
  end
