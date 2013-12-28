@@ -51,7 +51,6 @@ if platform?("redhat", "centos")
 
     # Compile and install from source with python
     bash "compile and install ddserver" do
-      not_if { ::File.exists?("/etc/ddserver") }
       cwd "/usr/local/src/ddserver"
       user "root"
       code <<-EOH
